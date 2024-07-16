@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .dropdown,
+        .checkboxes,
+        .unit-row {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown select,
+        .unit-dropdown,
+        .module1-dropdown {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .checkboxes label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .output {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="checkboxes">
+            <h2>Select Unit Types</h2>
+            <label><input type="checkbox" id="check_1a" onchange="toggleUnitType('1a')" checked> 1a</label>
+            <label><input type="checkbox" id="check_1b" onchange="toggleUnitType('1b')" checked> 1b</label>
+            <label><input type="checkbox" id="check_1c" onchange="toggleUnitType('1c')" checked> 1c</label>
+        </div>
+
+        <div class="dropdown">
+            <h2>Select Product</h2>
+            <select id="product_dropdown" onchange="updateModules()">
+                <option value="Bundle1">Bundle1</option>
+                <option value="Bundle2">Bundle2</option>
+                <option value="Bundle3" selected>Bundle3</option>
+                <option value="Bundle4">Bundle4</option>
+                <option value="A la carte">A la carte</option>
+            </select>
+        </div>
+
+        <table id="modules_table">
+            <thead>
+                <tr>
+                    <th>Modules</th>
+                    <th class="unit-1a">1a Title</th>
+                    <th class="unit-1b">1b Title</th>
+                    <th class="unit-1c">1c Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Platform</td>
+                    <td class="unit-1a"><select id="platform_units_1a" class="unit-dropdown"
+                            onchange="onPlatformDropdown(['1a'])" ></select></td>
+                    <td class="unit-1b"><select id="platform_units_1b" class="unit-dropdown"
+                            onchange="onPlatformDropdown(['1b'])"></select></td>
+                    <td class="unit-1c"><select id="platform_units_1c" class="unit-dropdown"
+                            onchange="onPlatformDropdown(['1c'])"></select></td>
+                </tr>
+                <tr>
+                    <td><label>
+                            <input type="checkbox" id="module1" onchange="updateModuleUnits()">
+                            Module1</label>
+                    </td>
+                    <td class="unit-1a"><select id="selected_units_module1_1a" class="module1-dropdown"
+                            onchange="calculatePrices()"></select></td>
+                    <td class="unit-1b"><select id="selected_units_module1_1b" class="module1-dropdown"
+                            onchange="calculatePrices()"></select></td>
+                    <td class="unit-1c"><select id="selected_units_module1_1c" class="module1-dropdown"
+                            onchange="calculatePrices()"></select></td>
+                </tr>
+                <tr>
+                    <td><label><input type="checkbox" id="module2" onchange="updateModuleUnits()"> Module2</label></td>
+                    <td class="unit-1a" id="selected_units_module2_1a"></td>
+                    <td class="unit-1b" id="selected_units_module2_1b"></td>
+                    <td class="unit-1c" id="selected_units_module2_1c"></td>
+                </tr>
+                <tr>
+                    <td><label><input type="checkbox" id="module3" onchange="updateModuleUnits()"> Module3</label></td>
+                    <td class="unit-1a" id="selected_units_module3_1a"></td>
+                    <td class="unit-1b" id="selected_units_module3_1b"></td>
+                    <td class="unit-1c" id="selected_units_module3_1c"></td>
+                </tr>
+                <tr>
+                    <td><label><input type="checkbox" id="module4" onchange="updateModuleUnits()"> Module4</label></td>
+                    <td class="unit-1a" id="selected_units_module4_1a"></td>
+                    <td class="unit-1b" id="selected_units_module4_1b"></td>
+                    <td class="unit-1c" id="selected_units_module4_1c"></td>
+                </tr>
+                <tr>
+                    <td><label><input type="checkbox" id="module5" onchange="updateModuleUnits()"> Module5</label></td>
+                    <td class="unit-1a" id="selected_units_module5_1a"></td>
+                    <td class="unit-1b" id="selected_units_module5_1b"></td>
+                    <td class="unit-1c" id="selected_units_module5_1c"></td>
+                </tr>
+                <tr>
+                    <td><label><input type="checkbox" id="module6" onchange="updateModuleUnits()"> Module6</label></td>
+                    <td class="unit-1a" id="selected_units_module6_1a"></td>
+                    <td class="unit-1b" id="selected_units_module6_1b"></td>
+                    <td class="unit-1c" id="selected_units_module6_1c"></td>
+                </tr>
+                <tr>
+                    <td>Unit List Price</td>
+                    <td class="unit-1a" id="unit_list_price_1a">0</td>
+                    <td class="unit-1b" id="unit_list_price_1b">0</td>
+                    <td class="unit-1c" id="unit_list_price_1c">0</td>
+                </tr>
+                <!-- SEARCH HERE -->
+                <tr>
+                    <td>Volume Discount</td>
+                    <td class="unit-1a" id="volume_discount_1a">0</td>
+                    <td class="unit-1b" id="volume_discount_1b">0</td>
+                    <td class="unit-1c" id="volume_discount_1c">0</td>
+                </tr>
+                <tr>
+                    <td>Volume Discounted Price</td>
+                    <td class="unit-1a" id="volume_discounted_price_1a">0</td>
+                    <td class="unit-1b" id="volume_discounted_price_1b">0</td>
+                    <td class="unit-1c" id="volume_discounted_price_1c">0</td>
+                </tr>
+                <tr>
+                    <td>Bundle Discount</td>
+                    <td class="unit-1a" id="bundle_discount_1a">0</td>
+                    <td class="unit-1b" id="bundle_discount_1b">0</td>
+                    <td class="unit-1c" id="bundle_discount_1c">0</td>
+                </tr>
+                <tr>
+                    <td>Bundle Discounted Unit Price</td>
+                    <td class="unit-1a" id="bundle_discounted_unit_price_1a">0</td>
+                    <td class="unit-1b" id="bundle_discounted_unit_price_1b">0</td>
+                    <td class="unit-1c" id="bundle_discounted_unit_price_1c">0</td>
+                </tr>
+                <tr>
+                    <td>Effective Discount</td>
+                    <td class="unit-1a" id="effective_discount_1a">0</td>
+                    <td class="unit-1b" id="effective_discount_1b">0</td>
+                    <td class="unit-1c" id="effective_discount_1c">0</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <hr>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total List Price</td>
+                    <td colspan="3" id="total_list_price">0</td>
+                </tr>
+                <tr>
+                    <td>Total Suggested Volume-Discounted Price</td>
+                    <td colspan="3" id="total_volume_discounted_price">0</td>
+                </tr>
+                <tr>
+                    <td>Discretionary Discount (%)</td>
+                    <td colspan="3"><input type="number" id="discretionary_discount" onchange="calculatePrices()"></td>
+                </tr>
+                <tr>
+                    <td>Final Price</td>
+                    <td colspan="3" id="final_price">0</td>
+                </tr>
+                <tr>
+                    <td>Total Effective Discount</td>
+                    <td colspan="3" id="total_effective_discount">0</td>
+                </tr>
+
+            </tbody>
+        </table>
+        <script>
+            function generateUnitOptions() {
+                let unitOptions = [];
+
+                function addOptions(start, end, step) {
+                    for (let i = start; i <= end; i += step) {
+                        unitOptions.push(i);
+                    }
+                }
+
+                addOptions(250, 1000, 250); // Intervals of 250 till 1000
+                addOptions(2000, 50000, 1000); // Intervals of 1000 till 50,000
+                addOptions(55000, 250000, 5000); // Intervals of 5000 till 250,000
+                addOptions(260000, 500000, 10000); // Intervals of 10,000 till 500,000
+                addOptions(520000, 1500000, 20000); // Intervals of 20,000 till 1,500,000
+                addOptions(1550000, 5000000, 50000); // Intervals of 50,000 till 5,000,000
+                addOptions(5100000, 10000000, 100000); // Intervals of 100,000 till 10,000,000
+                addOptions(10250000, 80000000, 250000); // Intervals of 250,000 till 80,000,000
+                return unitOptions;
+
+            }
+
+            const unitOptions = generateUnitOptions();
+
+            document.addEventListener("DOMContentLoaded", function () {
+                populatePlatformDropdown();
+                populateModule1Dropdown();
+                updateModules();
+            });
+
+
+            const bundles = {
+                "Bundle1": ["module2", "module4"],
+                "Bundle2": ["module1", "module2", "module4"],
+                "Bundle3": ["module1", "module2", "module4", "module5", "module6"],
+                "Bundle4": ["module1", "module3", "module4", "module5", "module6"],
+                
+            };
+
+            function populatePlatformDropdown(unitTypes = ['1a', '1b', '1c']) {
+                for (var unitType of unitTypes) {
+
+                    const platformdropdown = document.getElementById(`platform_units_${unitType}`);
+                    platformdropdown.innerHTML = '';
+                    for (var unit of unitOptions) {
+                        if (unit < (unitType == '1a' ? 5000 : unitType == '1b' ? 1000 : 250)) continue;
+                        const option = document.createElement("option");
+                        option.value = unit;
+                        option.textContent = unit;
+                        platformdropdown.appendChild(option);
+
+                    }
+                }
+
+            }
+
+            function populateModule1Dropdown(unitTypes = ['1a', '1b', '1c']) {
+
+                for (var unitType of unitTypes) {
+                    const module1dropdown = document.getElementById(`selected_units_module1_${unitType}`);
+                    module1dropdown.innerHTML = '';
+                    const platformunit = document.getElementById(`platform_units_${unitType}`).value;
+                    if (!document.getElementById('module1').checked) {
+                        const option = document.createElement("option");
+                        option.value = 0;
+                        option.textContent = 0;
+                        module1dropdown.appendChild(option);
+                        module1dropdown.disabled = true;
+                        continue;
+
+                    }
+                    else {
+                        module1dropdown.disabled = false;
+
+                    }
+                    for (var unit of unitOptions) {
+                        if (unit < (unitType == '1a' ? 5000 : unitType == '1b' ? 1000 : 250) || unit > platformunit) continue;
+                        const option = document.createElement("option");
+                        option.value = unit;
+                        option.textContent = unit;
+                        module1dropdown.appendChild(option);
+                    }
+                    module1dropdown.value=platformunit;
+                }
+
+            }
+            function toggleUnitType(unitType) {
+                const checkBox = document.getElementById(`check_${unitType}`);
+                const unitColumns = document.querySelectorAll(`.unit-${unitType}`);
+                unitColumns.forEach(column => {
+                    column.style.display = checkBox.checked ? "" : "none";
+                    // column.style['pointer-events'] = checkBox.checked ? "" : "none";
+                    // column.style['opacity'] = checkBox.checked ? 1 : 0.3;
+                });
+                calculatePrices()
+            }
+
+            function updateModules() {
+                const product = document.getElementById("product_dropdown").value;
+                const allModules = ["module1", "module2", "module3", "module4", "module5", "module6"];
+                const includedModules = bundles[product] || [];
+
+                allModules.forEach(module => {
+                    const checkBox = document.getElementById(module);
+                    checkBox.checked = includedModules.includes(module);
+                    checkBox.disabled = includedModules.includes(module);
+                });
+                updateModuleUnits();
+            }
+
+            function onPlatformDropdown(unitTypes = ['1a', '1b', '1c']) {
+                for (var unitType of unitTypes) {
+                    populateModule1Dropdown([unitType])
+                    updateModuleUnits([unitType]);
+                }
+
+            }
+            function updateModuleUnits(unitTypes = ['1a', '1b', '1c']) {
+                const modules = ["module2", "module3", "module4", "module5", "module6"];
+                for (var unitType of unitTypes) {
+                    populateModule1Dropdown([unitType])
+
+                    const platformUnits = document.getElementById(`platform_units_${unitType}`).value;
+                    modules.forEach(module => {
+
+                        document.getElementById(`selected_units_${module}_${unitType}`).textContent = document.getElementById(module).checked ? platformUnits : 0;
+                    });
+                }
+                calculatePrices();
+            }
+
+            function calculatePrices(unitTypes = ['1a', '1b', '1c']) {
+
+                checkedModules = [0];
+                for (var i = 1; i <= 6; i++) document.getElementById(`module${i}`).checked && checkedModules.push(i);
+                total_volume_discounted_price = 0
+                total_list_price = 0;
+                for (var unitType of unitTypes) {
+                    unitTypeChecked = document.getElementById(`check_${unitType}`).checked;
+                    const module1units = !unitTypeChecked ? 0 : parseInt(document.getElementById(`selected_units_module1_${unitType}`).value) || 0;
+                    const platformUnits = !unitTypeChecked ? 0 : parseInt(document.getElementById(`platform_units_${unitType}`).value) || 0;
+                    unitListPrice = calculateUnitListPrice(unitType, module1units, platformUnits, checkedModules);
+                    volumeDiscountedPrice = calculateVolumeDiscountedPrice(unitType, module1units, platformUnits, checkedModules);
+                    document.getElementById(`unit_list_price_${unitType}`).textContent = '$'+unitListPrice;
+                    document.getElementById(`volume_discounted_price_${unitType}`).textContent = '$'+volumeDiscountedPrice;
+
+                    document.getElementById(`volume_discount_${unitType}`).textContent = `${((unitListPrice - volumeDiscountedPrice) / unitListPrice * 100).toFixed(2)}%`
+
+                    bundle_discount_rate = document.getElementById('product_dropdown').value != 'A la carte' ? 0.15 : 0
+                    document.getElementById(`bundle_discount_${unitType}`).textContent = `${bundle_discount_rate * 100}%`
+                    bundle_discount = volumeDiscountedPrice * (1 - bundle_discount_rate)
+
+                    document.getElementById(`bundle_discounted_unit_price_${unitType}`).textContent = '$'+bundle_discount
+
+                    if (unitTypeChecked) {
+                        total_list_price += unitListPrice;
+                        total_volume_discounted_price += bundle_discount
+                    }
+                    document.getElementById(`effective_discount_${unitType}`).textContent =
+                        `${((unitListPrice - bundle_discount) / unitListPrice * 100).toFixed(2)}%`
+                }
+                document.getElementById("total_list_price").textContent = total_list_price.toFixed(2);
+                discretionary_discount = parseInt(document.getElementById("discretionary_discount").value) / 100 || 0
+                document.getElementById('total_volume_discounted_price').textContent = total_volume_discounted_price.toFixed(2)
+                final_price = total_volume_discounted_price * (1 - discretionary_discount)
+                document.getElementById('final_price').textContent = final_price.toFixed(2)
+
+                document.getElementById('total_effective_discount').textContent = `${((total_list_price - final_price) / total_list_price * 100).toFixed(2)}%`
+            }
+
+            const rates = {
+                "1a": [
+                    [1000, 20.00, 20.10, 20.20, 20.30, 20.40, 20.50, 20.60],
+                    [5000, 19.00, 19.10, 19.20, 19.30, 19.40, 19.50, 19.60],
+                    [10000, 18.00, 18.10, 18.20, 18.30, 18.40, 18.50, 18.60],
+                    [20000, 17.00, 17.10, 17.20, 17.30, 17.40, 17.50, 17.60],
+                    [30000, 16.00, 16.10, 16.20, 16.30, 16.40, 16.50, 16.60],
+                    [40000, 15.00, 15.10, 15.20, 15.30, 15.40, 15.50, 15.60],
+                    [50000, 14.00, 14.10, 14.20, 14.30, 14.40, 14.50, 14.60],
+                    [100000, 13.00, 13.10, 13.20, 13.30, 13.40, 13.50, 13.60],
+                    [250000, 12.00, 12.10, 12.20, 12.30, 12.40, 12.50, 12.60],
+                    [500000, 11.00, 11.10, 11.20, 11.30, 11.40, 11.50, 11.60],
+                    [1500000, 10.00, 10.10, 10.20, 10.30, 10.40, 10.50, 10.60],
+                    [5000000, 9.00, 9.10, 9.20, 9.30, 9.40, 9.50, 9.60],
+                    [10000000, 8.00, 8.10, 8.20, 8.30, 8.40, 8.50, 8.60],
+                    [80000000, 7.00, 7.10, 7.20, 7.30, 7.40, 7.50, 7.60]
+                ],
+                "1b": [
+                    [1000, 40.00, 40.20, 40.40, 40.60, 40.80, 41.00, 41.20],
+                    [5000, 38.00, 38.20, 38.40, 38.60, 38.80, 39.00, 39.20],
+                    [10000, 36.00, 36.20, 36.40, 36.60, 36.80, 37.00, 37.20],
+                    [20000, 34.00, 34.20, 34.40, 34.60, 34.80, 35.00, 35.20],
+                    [30000, 32.00, 32.20, 32.40, 32.60, 32.80, 33.00, 33.20],
+                    [40000, 30.00, 30.20, 30.40, 30.60, 30.80, 31.00, 31.20],
+                    [50000, 28.00, 28.20, 28.40, 28.60, 28.80, 29.00, 29.20],
+                    [100000, 26.00, 26.20, 26.40, 26.60, 26.80, 27.00, 27.20],
+                    [250000, 24.00, 24.20, 24.40, 24.60, 24.80, 25.00, 25.20],
+                    [500000, 22.00, 22.20, 22.40, 22.60, 22.80, 23.00, 23.20],
+                    [1500000, 20.00, 20.20, 20.40, 20.60, 20.80, 21.00, 21.20],
+                    [5000000, 18.00, 18.20, 18.40, 18.60, 18.80, 19.00, 19.20],
+                    [10000000, 16.00, 16.20, 16.40, 16.60, 16.80, 17.00, 17.20],
+                    [80000000, 14.00, 14.20, 14.40, 14.60, 14.80, 15.00, 15.20]
+                ],
+                "1c": [
+                    [1000, 80.00, 80.40, 80.80, 81.20, 81.60, 82.00, 82.40],
+                    [5000, 76.00, 76.40, 76.80, 77.20, 77.60, 78.00, 78.40],
+                    [10000, 72.00, 72.40, 72.80, 73.20, 73.60, 74.00, 74.40],
+                    [20000, 68.00, 68.40, 68.80, 69.20, 69.60, 70.00, 70.40],
+                    [30000, 64.00, 64.40, 64.80, 65.20, 65.60, 66.00, 66.40],
+                    [40000, 60.00, 60.40, 60.80, 61.20, 61.60, 62.00, 62.40],
+                    [50000, 56.00, 56.40, 56.80, 57.20, 57.60, 58.00, 58.40],
+                    [100000, 52.00, 52.40, 52.80, 53.20, 53.60, 54.00, 54.40],
+                    [250000, 48.00, 48.40, 48.80, 49.20, 49.60, 50.00, 50.40],
+                    [500000, 44.00, 44.40, 44.80, 45.20, 45.60, 46.00, 46.40],
+                    [1500000, 40.00, 40.40, 40.80, 41.20, 41.60, 42.00, 42.40],
+                    [5000000, 36.00, 36.40, 36.80, 37.20, 37.60, 38.00, 38.40],
+                    [10000000, 32.00, 32.40, 32.80, 33.20, 33.60, 34.00, 34.40],
+                    [15000000, 28.00, 28.40, 28.80, 29.20, 29.60, 30.00, 30.40]
+                ]
+            };
+
+            function calculateUnitListPrice(unitType, module1unit, platformunit, checkedModules) {
+                unitlistprice = 0;
+                unitslist = [platformunit, module1unit, platformunit, platformunit, platformunit, platformunit, platformunit]
+                const rateSegments = rates[unitType];
+
+                for (let moduleIndex of checkedModules) {
+                    let units = unitslist[moduleIndex]
+                    let calculatedUnits = 0;
+                    let sum10k = 0
+                    for (let segment of rateSegments) {
+                        upperLimit = segment[0]
+                        let rate = segment[moduleIndex + 1];
+                        sum10k += ((upperLimit - calculatedUnits) * rate)
+                        calculatedUnits = upperLimit;
+                        if (upperLimit >= 10000) break;
+                    }
+                    let avgRate = sum10k / calculatedUnits;
+                    unitlistprice += (avgRate * units)
+
+                }
+                return unitlistprice;
+            }
+
+
+
+
+            function calculateVolumeDiscountedPrice(unitType, module1unit, platformunit, checkedModules) {
+                let price = 0;
+                unitslist = [platformunit, module1unit, platformunit, platformunit, platformunit, platformunit, platformunit]
+                const rateSegments = rates[unitType];
+
+                for (let moduleIndex of checkedModules) {
+                    let units = unitslist[moduleIndex]
+
+                    console.log('units count ' + units + ' index ' + moduleIndex);
+                    let prevUpperLimit = 0;
+                    for (let segment of rateSegments) {
+                        console.log('remaining units '+units);
+                        if (units <= 0) break;
+                        let upperLimit = segment[0]
+                        let count =  Math.min( upperLimit - prevUpperLimit, units);
+                        let rate = segment[moduleIndex + 1];
+                        console.log('upperlimit ' + upperLimit + ' rate ' + rate + ' count '+count);
+                        price += (count * rate)
+                        units -= count
+                        prevUpperLimit = upperLimit;
+
+                    }
+
+                }
+                return price;
+            }
+
+
+        </script>
+    </div>
+</body>
+
+</html>
