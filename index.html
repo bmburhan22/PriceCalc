@@ -22,6 +22,7 @@
         .dropdown,
         .checkboxes,
         .unit-row {
+            flex: 1;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
@@ -62,31 +63,42 @@
         }
 
         .hidden {
-            display: none;
+            visibility: hidden;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="checkboxes">
-            <h2>Select Unit Types</h2>
-            <label><input type="checkbox" id="check_1a" onchange="toggleUnitType('1a')" checked> 1a</label>
-            <label><input type="checkbox" id="check_1b" onchange="toggleUnitType('1b')" checked> 1b</label>
-            <label><input type="checkbox" id="check_1c" onchange="toggleUnitType('1c')" checked> 1c</label>
-        </div>
+        <div class="row">
 
-        <div class="dropdown">
-            <h2>Select Product</h2>
-            <select id="product_dropdown" onchange="updateModules()">
-                <option value="Bundle1">Bundle1</option>
-                <option value="Bundle2">Bundle2</option>
-                <option value="Bundle3" selected>Bundle3</option>
-                <option value="Bundle4">Bundle4</option>
-                <option value="A la carte">A la carte</option>
-            </select>
-        </div>
 
+            <div class="dropdown">
+                <h2>Select Product</h2>
+                <select id="product_dropdown" onchange="updateModules()">
+                    <option value="Bundle1">Bundle1</option>
+                    <option value="Bundle2" selected>Bundle2</option>
+                    <option value="Bundle3">Bundle3</option>
+                    <option value="Bundle4">Bundle4</option>
+                    <option value="A la carte">A la carte</option>
+                </select>
+            </div>
+            <div class="checkboxes">
+                <h2>Select Unit Types</h2>
+                <div class="row">
+                    <label><input type="checkbox" id="check_1a" onchange="toggleUnitType(['1a'])"> 1a</label>
+                    <label><input type="checkbox" id="check_1b" onchange="toggleUnitType(['1b'])" checked> 1b</label>
+                    <label><input type="checkbox" id="check_1c" onchange="toggleUnitType(['1c'])" checked> 1c</label>
+                </div>
+
+            </div>
+        </div>
         <table id="modules_table">
             <thead>
                 <tr>
@@ -100,7 +112,7 @@
                 <tr>
                     <td>Platform</td>
                     <td class="unit-1a"><select id="platform_units_1a" class="unit-dropdown"
-                            onchange="onPlatformDropdown(['1a'])" ></select></td>
+                            onchange="onPlatformDropdown(['1a'])"></select></td>
                     <td class="unit-1b"><select id="platform_units_1b" class="unit-dropdown"
                             onchange="onPlatformDropdown(['1b'])"></select></td>
                     <td class="unit-1c"><select id="platform_units_1c" class="unit-dropdown"
@@ -171,13 +183,13 @@
                     <td>Bundle Discount</td>
                     <td class="unit-1a" id="bundle_discount_1a">0</td>
                     <td class="unit-1b" id="bundle_discount_1b">0</td>
-                    <td class="unit-1c" id="bundle_discount_1c">0</td>
+                    <td class="unit-1c hidden" id="bundle_discount_1c"></td>
                 </tr>
                 <tr>
                     <td>Bundle Discounted Unit Price</td>
                     <td class="unit-1a" id="bundle_discounted_unit_price_1a">0</td>
                     <td class="unit-1b" id="bundle_discounted_unit_price_1b">0</td>
-                    <td class="unit-1c" id="bundle_discounted_unit_price_1c">0</td>
+                    <td class="unit-1c hidden" id="bundle_discounted_unit_price_1c"></td>
                 </tr>
                 <tr>
                     <td>Effective Discount</td>
@@ -214,6 +226,11 @@
             </tbody>
         </table>
         <script>
+            formatNum = (number) => number.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+
             function generateUnitOptions() {
                 let unitOptions = [];
 
@@ -241,6 +258,7 @@
                 populatePlatformDropdown();
                 populateModule1Dropdown();
                 updateModules();
+                toggleUnitType();
             });
 
 
@@ -249,7 +267,7 @@
                 "Bundle2": ["module1", "module2", "module4"],
                 "Bundle3": ["module1", "module2", "module4", "module5", "module6"],
                 "Bundle4": ["module1", "module3", "module4", "module5", "module6"],
-                
+
             };
 
             function populatePlatformDropdown(unitTypes = ['1a', '1b', '1c']) {
@@ -261,7 +279,7 @@
                         if (unit < (unitType == '1a' ? 5000 : unitType == '1b' ? 1000 : 250)) continue;
                         const option = document.createElement("option");
                         option.value = unit;
-                        option.textContent = unit;
+                        option.textContent = formatNum(unit);
                         platformdropdown.appendChild(option);
 
                     }
@@ -290,23 +308,26 @@
                     }
                     for (var unit of unitOptions) {
                         if (unit < (unitType == '1a' ? 5000 : unitType == '1b' ? 1000 : 250) || unit > platformunit) continue;
+
+
                         const option = document.createElement("option");
                         option.value = unit;
-                        option.textContent = unit;
+                        option.textContent = formatNum(unit);
                         module1dropdown.appendChild(option);
                     }
-                    module1dropdown.value=platformunit;
+                    module1dropdown.value = platformunit;
                 }
 
             }
-            function toggleUnitType(unitType) {
-                const checkBox = document.getElementById(`check_${unitType}`);
-                const unitColumns = document.querySelectorAll(`.unit-${unitType}`);
-                unitColumns.forEach(column => {
-                    column.style.display = checkBox.checked ? "" : "none";
-                    // column.style['pointer-events'] = checkBox.checked ? "" : "none";
-                    // column.style['opacity'] = checkBox.checked ? 1 : 0.3;
-                });
+            function toggleUnitType(unitTypes = ['1a', '1b', '1c']) {
+
+                for (let unitType of unitTypes) {
+                    const checkBox = document.getElementById(`check_${unitType}`);
+                    const unitColumns = document.querySelectorAll(`.unit-${unitType}`);
+                    unitColumns.forEach(column => {
+                        column.style.visibility = checkBox.checked ? "" : "hidden";
+                    });
+                }
                 calculatePrices()
             }
 
@@ -338,7 +359,7 @@
                     const platformUnits = document.getElementById(`platform_units_${unitType}`).value;
                     modules.forEach(module => {
 
-                        document.getElementById(`selected_units_${module}_${unitType}`).textContent = document.getElementById(module).checked ? platformUnits : 0;
+                        document.getElementById(`selected_units_${module}_${unitType}`).textContent = document.getElementById(module).checked ? formatNum(platformUnits) : 0;
                     });
                 }
                 calculatePrices();
@@ -349,38 +370,61 @@
                 checkedModules = [0];
                 for (var i = 1; i <= 6; i++) document.getElementById(`module${i}`).checked && checkedModules.push(i);
                 total_volume_discounted_price = 0
+                total_volume_discounted_price_nobundle = 0
+
                 total_list_price = 0;
+                let remove_unit_list_price = unitTypes.some(unitType => {
+                    if (!document.getElementById(`check_${unitType}`).checked) return false
+                    const platformUnits = parseInt(document.getElementById(`platform_units_${unitType}`).value) || 0;
+                    return platformUnits < 10000
+                }
+                )
                 for (var unitType of unitTypes) {
                     unitTypeChecked = document.getElementById(`check_${unitType}`).checked;
                     const module1units = !unitTypeChecked ? 0 : parseInt(document.getElementById(`selected_units_module1_${unitType}`).value) || 0;
                     const platformUnits = !unitTypeChecked ? 0 : parseInt(document.getElementById(`platform_units_${unitType}`).value) || 0;
                     unitListPrice = calculateUnitListPrice(unitType, module1units, platformUnits, checkedModules);
+                    if (unitListPrice <= 0) remove_unit_list_price = true;
                     volumeDiscountedPrice = calculateVolumeDiscountedPrice(unitType, module1units, platformUnits, checkedModules);
-                    document.getElementById(`unit_list_price_${unitType}`).textContent = '$'+unitListPrice;
-                    document.getElementById(`volume_discounted_price_${unitType}`).textContent = '$'+volumeDiscountedPrice;
+                    let unit_list_element = document.getElementById(`unit_list_price_${unitType}`)
+                    let volume_discount_element = document.getElementById(`volume_discount_${unitType}`)
+                    unit_list_element.textContent = '$' + formatNum(unitListPrice);
+                    volume_discount_element.textContent = `${formatNum(((unitListPrice - volumeDiscountedPrice) / unitListPrice * 100))}%`
+                    unit_list_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
+                    volume_discount_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
 
-                    document.getElementById(`volume_discount_${unitType}`).textContent = `${((unitListPrice - volumeDiscountedPrice) / unitListPrice * 100).toFixed(2)}%`
+                    document.getElementById(`volume_discounted_price_${unitType}`).textContent = '$' + formatNum(volumeDiscountedPrice);
 
-                    bundle_discount_rate = document.getElementById('product_dropdown').value != 'A la carte' ? 0.15 : 0
-                    document.getElementById(`bundle_discount_${unitType}`).textContent = `${bundle_discount_rate * 100}%`
+
+                    bundle_discount_rate = (document.getElementById('product_dropdown').value != 'A la carte' && unitType != "1c") ? 0.15 : 0
+                    document.getElementById(`bundle_discount_${unitType}`).textContent = `${formatNum(bundle_discount_rate * 100)}%`
                     bundle_discount = volumeDiscountedPrice * (1 - bundle_discount_rate)
 
-                    document.getElementById(`bundle_discounted_unit_price_${unitType}`).textContent = '$'+bundle_discount
+                    document.getElementById(`bundle_discounted_unit_price_${unitType}`).textContent = '$' + formatNum(bundle_discount)
 
                     if (unitTypeChecked) {
                         total_list_price += unitListPrice;
                         total_volume_discounted_price += bundle_discount
+                        total_volume_discounted_price_nobundle += volumeDiscountedPrice
                     }
-                    document.getElementById(`effective_discount_${unitType}`).textContent =
-                        `${((unitListPrice - bundle_discount) / unitListPrice * 100).toFixed(2)}%`
+                    effective_discount_element = document.getElementById(`effective_discount_${unitType}`)
+                    effective_discount_element.textContent = `${formatNum(((unitListPrice - bundle_discount) / unitListPrice * 100))}%`
+                    effective_discount_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
                 }
-                document.getElementById("total_list_price").textContent = total_list_price.toFixed(2);
-                discretionary_discount = parseInt(document.getElementById("discretionary_discount").value) / 100 || 0
-                document.getElementById('total_volume_discounted_price').textContent = total_volume_discounted_price.toFixed(2)
-                final_price = total_volume_discounted_price * (1 - discretionary_discount)
-                document.getElementById('final_price').textContent = final_price.toFixed(2)
+                total_list_price_element = document.getElementById("total_list_price")
+                total_list_price_element.textContent = formatNum(total_list_price);
+                total_list_price_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
 
-                document.getElementById('total_effective_discount').textContent = `${((total_list_price - final_price) / total_list_price * 100).toFixed(2)}%`
+                discretionary_discount = parseInt(document.getElementById("discretionary_discount").value) / 100 || 0
+                document.getElementById('total_volume_discounted_price').textContent = formatNum(total_volume_discounted_price)
+                final_price = total_volume_discounted_price * (1 - discretionary_discount)
+                document.getElementById('final_price').textContent = formatNum(final_price)
+
+                let prefinal_price = remove_unit_list_price ? total_volume_discounted_price_nobundle : total_list_price
+                document.getElementById('total_effective_discount').textContent = `${formatNum((prefinal_price - final_price) / prefinal_price * 100)}%`
+
+
+
             }
 
             const rates = {
@@ -436,6 +480,7 @@
 
             function calculateUnitListPrice(unitType, module1unit, platformunit, checkedModules) {
                 unitlistprice = 0;
+
                 unitslist = [platformunit, module1unit, platformunit, platformunit, platformunit, platformunit, platformunit]
                 const rateSegments = rates[unitType];
 
@@ -468,15 +513,12 @@
                 for (let moduleIndex of checkedModules) {
                     let units = unitslist[moduleIndex]
 
-                    console.log('units count ' + units + ' index ' + moduleIndex);
                     let prevUpperLimit = 0;
                     for (let segment of rateSegments) {
-                        console.log('remaining units '+units);
                         if (units <= 0) break;
                         let upperLimit = segment[0]
-                        let count =  Math.min( upperLimit - prevUpperLimit, units);
+                        let count = Math.min(upperLimit - prevUpperLimit, units);
                         let rate = segment[moduleIndex + 1];
-                        console.log('upperlimit ' + upperLimit + ' rate ' + rate + ' count '+count);
                         price += (count * rate)
                         units -= count
                         prevUpperLimit = upperLimit;
