@@ -83,7 +83,7 @@
                 <h2>Select Product</h2>
                 <select id="product_dropdown" onchange="updateModules()">
                     <option value="Bundle1">Bundle1</option>
-                    <option value="Bundle2" selected>Bundle2</option>
+                    <option value="Bundle2">Bundle2</option>
                     <option value="Bundle3">Bundle3</option>
                     <option value="Bundle4">Bundle4</option>
                     <option value="A la carte">A la carte</option>
@@ -92,7 +92,7 @@
             <div class="checkboxes">
                 <h2>Select Unit Types</h2>
                 <div class="row">
-                    <label><input type="checkbox" id="check_1a" onchange="toggleUnitType(['1a'])"> 1a</label>
+                    <label><input type="checkbox" id="check_1a" onchange="toggleUnitType(['1a'])" checked> 1a</label>
                     <label><input type="checkbox" id="check_1b" onchange="toggleUnitType(['1b'])" checked> 1b</label>
                     <label><input type="checkbox" id="check_1c" onchange="toggleUnitType(['1c'])" checked> 1c</label>
                 </div>
@@ -384,14 +384,13 @@
                     const module1units = !unitTypeChecked ? 0 : parseInt(document.getElementById(`selected_units_module1_${unitType}`).value) || 0;
                     const platformUnits = !unitTypeChecked ? 0 : parseInt(document.getElementById(`platform_units_${unitType}`).value) || 0;
                     unitListPrice = calculateUnitListPrice(unitType, module1units, platformUnits, checkedModules);
-                    if (unitListPrice <= 0) remove_unit_list_price = true;
                     volumeDiscountedPrice = calculateVolumeDiscountedPrice(unitType, module1units, platformUnits, checkedModules);
                     let unit_list_element = document.getElementById(`unit_list_price_${unitType}`)
                     let volume_discount_element = document.getElementById(`volume_discount_${unitType}`)
                     unit_list_element.textContent = '$' + formatNum(unitListPrice);
                     volume_discount_element.textContent = `${formatNum(((unitListPrice - volumeDiscountedPrice) / unitListPrice * 100))}%`
-                    unit_list_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
-                    volume_discount_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
+                    if (remove_unit_list_price) unit_list_element.style.visibility = 'hidden';
+                    if (remove_unit_list_price) volume_discount_element.style.visibility = 'hidden';
 
                     document.getElementById(`volume_discounted_price_${unitType}`).textContent = '$' + formatNum(volumeDiscountedPrice);
 
@@ -409,7 +408,7 @@
                     }
                     effective_discount_element = document.getElementById(`effective_discount_${unitType}`)
                     effective_discount_element.textContent = `${formatNum(((unitListPrice - bundle_discount) / unitListPrice * 100))}%`
-                    effective_discount_element.style.visibility = remove_unit_list_price ? 'hidden' : '';
+                    if (remove_unit_list_price) effective_discount_element.style.visibility = 'hidden';
                 }
                 total_list_price_element = document.getElementById("total_list_price")
                 total_list_price_element.textContent = formatNum(total_list_price);
@@ -421,8 +420,8 @@
                 document.getElementById('final_price').textContent = formatNum(final_price)
 
                 let prefinal_price = remove_unit_list_price ? total_volume_discounted_price_nobundle : total_list_price
-                document.getElementById('total_effective_discount').textContent = `${formatNum((prefinal_price - final_price) / prefinal_price * 100)}%`
 
+                document.getElementById('total_effective_discount').textContent = `${formatNum((((prefinal_price - final_price) / prefinal_price) || 0) * 100)}%`
 
 
             }
